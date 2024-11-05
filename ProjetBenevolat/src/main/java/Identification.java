@@ -23,12 +23,13 @@ public class Identification {
 
 	}
 
+	
 	public void start() throws SQLException {
 		System.out.println("Voulez vous vous connecter -signIn ou créer un nouveau profil -signUp");
 		myObj = new Scanner(System.in);
 		String page = myObj.nextLine();
 		while (!(page.equals("-signIn") || page.equals("-signUp"))) {
-			System.out.println("Pour se connecter taper -signIn et pour s'inscrire taper -signUp");
+			System.out.println("Pour se connecter taper \"-signIn\" et pour s'inscrire taper \"-signUp\"");
 			page = myObj.nextLine();
 		}
 		if (page.equals("-signIn")) {
@@ -41,7 +42,8 @@ public class Identification {
 			this.signUp();
 	}
 
-	public void signUp() throws SQLException {
+	
+	private String connectType() {
 		System.out.println(
 				"Voulez vous vous connecter en tant que bénévole -b ou en tant que personne en besoin d'aide -a");
 		String option = myObj.nextLine();
@@ -49,6 +51,11 @@ public class Identification {
 			System.out.println("Rentrez -a pour personne en besoin d'aide ou -b pour personne bénévole");
 			option = myObj.nextLine();
 		}
+		return option;
+	}
+	
+	public void signUp() throws SQLException {
+		String option = connectType();
 		myObj = new Scanner(System.in);
 		System.out.println("Donnez votre mail");
 		String mail = myObj.nextLine();
@@ -62,38 +69,36 @@ public class Identification {
 		ResultSet rs = preparedStatement.executeQuery();
 		if (rs.next()) {
 			if (option.equals("-a")) {
-				user = new Personne(rs.getString("nom"), rs.getString("prenom"),
-						rs.getString("ville"), rs.getString("mail"), rs.getInt("tel"));
+				user = new Personne(rs.getString("nom"), rs.getString("prenom"), rs.getString("ville"),
+						rs.getString("mail"), rs.getInt("tel"));
 
 			} else {
-				user = new Benevole(rs.getString("nom"), rs.getString("prenom"),
-						rs.getString("ville"), rs.getString("mail"), rs.getInt("tel"));
+				user = new Benevole(rs.getString("nom"), rs.getString("prenom"), rs.getString("ville"),
+						rs.getString("mail"), rs.getInt("tel"));
 
 			}
-			System.out.println("Bienvenue " + user.getPrenom());
+			System.out.println("Bienvenue " + user.toString());
 			user.utilisation();
-		}
-		else {
+			
+		} else {
 			System.out.println("Erreur d'authentification");
 			sql = "select * from User where mail = ?";
 			preparedStatement = this.connection.prepareStatement(sql);
 			preparedStatement.setString(1, mail);
 			rs = preparedStatement.executeQuery();
-			if(rs.next()) {
+			if (rs.next()) {
 				System.out.println("Mot de passe erronné");
 				this.signUp();
-			}else {
+			} else {
 				System.out.println("Adresse mail inconnue");
 				this.start();
 			}
 		}
 
-		
-
 	}
-
+	
 	public void singIn() throws SQLException {
-		Scanner myObj = new Scanner(System.in);
+		myObj = new Scanner(System.in);
 
 		System.out.println("Rentrez votre nom");
 		String nom = myObj.nextLine();
@@ -117,20 +122,28 @@ public class Identification {
 		preparedStatement.setString(5, String.valueOf(tel));
 
 		int rowsInserted = preparedStatement.executeUpdate();
-		 sql = "INSERT INTO AccessControl(mail, mdp) VALUES (?,?)";
-		 preparedStatement = this.connection.prepareStatement(sql);
+		sql = "INSERT INTO AccessControl(mail, mdp) VALUES (?,?)";
+		preparedStatement = this.connection.prepareStatement(sql);
 		preparedStatement.setString(1, mail);
 		preparedStatement.setString(2, mdp);
-		 rowsInserted = preparedStatement.executeUpdate();
+		rowsInserted = preparedStatement.executeUpdate();
 
+		String option = connectType();
+		if (option.equals("-a")) {
+			user = new Personne(nom, prenom, ville, mail, tel);
+		} else {
+			user = new Benevole(nom, prenom, ville, mail, tel);
 
+		}
+		System.out.println("Bienvenue " + user.toString());
+		user.utilisation();
 		System.out.println("Bienvenue " + prenom);
 
 	}
 
 	public void signOut() throws SQLException {
 		connection.close();
-
+		myObj.close();
 		System.out.println("Vous avez été déconnecté");
 		System.exit(0);
 	}

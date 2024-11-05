@@ -1,3 +1,4 @@
+import java.sql.SQLException;
 
 public abstract class User {
 	
@@ -37,5 +38,9 @@ public abstract class User {
 		return n_tel;
 	}
 	
-	public abstract void utilisation();
+	public String toString() {
+		return this.nom + " " + this.prenom;
+	}
+	
+	public abstract void utilisation() throws SQLException;
 }
