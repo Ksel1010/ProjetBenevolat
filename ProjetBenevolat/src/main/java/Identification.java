@@ -4,22 +4,18 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Identification {
 	private Connection connection;
-	private Scanner myObj = new Scanner(System.in);
+	private Scanner myObj ;
 	private User user;
 
-	public Connection getConnection() {
-		return connection;
-	}
 
-	public Identification() throws SQLException {
-		String url = "jdbc:mysql://srv-bdens.insa-toulouse.fr:3306/projet_gei_022";
-		String username = "projet_gei_022";
-		String mdp = "Deph4ohj";
-		this.connection = DriverManager.getConnection(url, username, mdp);
+	public Identification()  {
 
 	}
 
@@ -34,7 +30,7 @@ public class Identification {
 		}
 		if (page.equals("-signIn")) {
 			try {
-				this.singIn();
+				this.signIn();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -54,19 +50,20 @@ public class Identification {
 		return option;
 	}
 	
-	public void signUp() throws SQLException {
+	public void signIn() throws SQLException {
 		String option = connectType();
 		myObj = new Scanner(System.in);
 		System.out.println("Donnez votre mail");
 		String mail = myObj.nextLine();
 		System.out.println("Donnez votre mot de passe");
 		String mdp = myObj.nextLine();
-		String sql = "select * from AccessControl, User " + "where mdp= ? and AccessControl.mail =?"
-				+ "and AccessControl.mail = User.mail";
-		PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
-		preparedStatement.setString(1, mdp);
-		preparedStatement.setString(2, mail);
-		ResultSet rs = preparedStatement.executeQuery();
+		ArrayList<String> tables = new ArrayList<>(Arrays.asList("AccessControl", "User");
+		ArrayList<String> conditions = new ArrayList<>(Arrays.asList("AccessControl.mail = User.mail"));
+		ArrayList<String> colonnes = new ArrayList<>(Arrays.asList("AccessControl.mail","mdp" ));
+		ArrayList<String> values = new ArrayList<>(Arrays.asList(mail,mdp));
+
+		ResultSet rs = SQLRequest.selectJoin(tables, conditions, colonnes, values);
+		
 		if (rs.next()) {
 			if (option.equals("-a")) {
 				user = new Personne(rs.getString("nom"), rs.getString("prenom"), rs.getString("ville"),
@@ -82,10 +79,7 @@ public class Identification {
 			
 		} else {
 			System.out.println("Erreur d'authentification");
-			sql = "select * from User where mail = ?";
-			preparedStatement = this.connection.prepareStatement(sql);
-			preparedStatement.setString(1, mail);
-			rs = preparedStatement.executeQuery();
+			rs = SQLRequest.select("User", new ArrayList<>(List.of("mail")), new ArrayList<>(List.of(mail)));
 			if (rs.next()) {
 				System.out.println("Mot de passe erronné");
 				this.signUp();
@@ -97,7 +91,7 @@ public class Identification {
 
 	}
 	
-	public void singIn() throws SQLException {
+	public void signUp() throws SQLException {
 		myObj = new Scanner(System.in);
 
 		System.out.println("Rentrez votre nom");
@@ -113,28 +107,18 @@ public class Identification {
 		System.out.println("Rentrez votre ville");
 		String ville = myObj.nextLine();
 
-		String sql = "INSERT INTO User(nom, prenom, mail, ville, tel) VALUES (?,?,?,?,?)";
-		PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
-		preparedStatement.setString(1, nom);
-		preparedStatement.setString(2, prenom);
-		preparedStatement.setString(3, mail);
-		preparedStatement.setString(4, ville);
-		preparedStatement.setString(5, String.valueOf(tel));
+		user = new User(nom, prenom, ville, mail, tel);
 
-		int rowsInserted = preparedStatement.executeUpdate();
-		sql = "INSERT INTO AccessControl(mail, mdp) VALUES (?,?)";
-		preparedStatement = this.connection.prepareStatement(sql);
-		preparedStatement.setString(1, mail);
-		preparedStatement.setString(2, mdp);
-		rowsInserted = preparedStatement.executeUpdate();
+		SQLRequest.insert("User", user);
+		SQLRequest.insert("AccessControl", new String[]{mail, mdp}) ;
 
 		String option = connectType();
 		if (option.equals("-a")) {
-			user = new Personne(nom, prenom, ville, mail, tel);
+			user = (Personne) user;
 		} else {
-			user = new Benevole(nom, prenom, ville, mail, tel);
-
+			user = (Benevole) user;
 		}
+
 		System.out.println("Bienvenue " + user.toString());
 		user.utilisation();
 		System.out.println("Bienvenue " + prenom);

@@ -1,0 +1,98 @@
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class SQLRequest {
+
+    private static Connection connection;
+    private static String sql;
+    private static PreparedStatement preparedStatement;
+    private static final ArrayList<String>listOfExistingTables = new ArrayList<>(Arrays.asList("Tasks","AccessControl","User"));
+
+    static {
+
+        try {
+            String url = "jdbc:mysql://srv-bdens.insa-toulouse.fr:3306/projet_gei_022";
+            String username = "projet_gei_022";
+            String mdp = "Deph4ohj";
+            SQLRequest.connection = DriverManager.getConnection(url, username, mdp);
+        } catch (SQLException e) {
+
+        }
+    }
+
+    public  static void insert(String table, Object o)throws SQLException{
+        switch (table){
+
+            case "User":
+                User user = (User)o;
+                sql = "INSERT INTO User(nom, prenom, mail, ville, tel) VALUES (?,?,?,?,?)";
+                preparedStatement = SQLRequest.connection.prepareStatement(sql);
+                preparedStatement.setString(1, user.getNom());
+                preparedStatement.setString(2, user.getPrenom());
+                preparedStatement.setString(3, user.getMail());
+                preparedStatement.setString(4, user.getVille());
+                preparedStatement.setString(5, String.valueOf(user.getN_tel()));
+                preparedStatement.executeUpdate();
+                break;
+            case "Tasks":
+                Task task = (Task) o;
+                sql = "INSERT INTO Tasks(mailInitializer, description, title, dateExpiration) VALUES (?,?,?,?)";
+                preparedStatement = SQLRequest.connection.prepareStatement(sql);
+                preparedStatement.setString(1, task.getMailInitializer());
+                preparedStatement.setString(2, task.getDescription());
+                preparedStatement.setString(3, task.getTitle());
+                preparedStatement.setDate(4, task.getDateExpiration());
+                preparedStatement.executeUpdate();
+
+                break;
+            case "AccessControl":
+                String[] li = (String[])o;
+                sql = "INSERT INTO AccessControl(mail, mdp) VALUES (?,?)";
+                preparedStatement = SQLRequest.connection.prepareStatement(sql);
+                preparedStatement.setString(1, li[0]);
+                preparedStatement.setString(2, li[1]);
+                preparedStatement.executeUpdate();
+                break;
+        }
+    }
+
+        public static ResultSet select(String table, ArrayList<String> colonnes, ArrayList<String> values) throws SQLException {
+            if (listOfExistingTables.contains(table)){
+                return selectExistingTable(table, colonnes, values);
+            }
+            else throw new SQLException("No table matches the select request") ;
+
+        }
+
+        private static ResultSet selectExistingTable(String table, ArrayList<String> colonnes, ArrayList<String> values){
+            sql = "Select * from "+table+" where ";
+            for (int i= 0; i<colonnes.size()-1;i++){
+
+                sql+=colonnes.get(i)+" = "+values.get(i)+" and ";
+            }
+            sql+= colonnes.getLast()+" = "+values.getLast();
+            try {
+                preparedStatement = SQLRequest.connection.prepareStatement(sql);
+                return preparedStatement.executeQuery();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public static ResultSet selectJoin(ArrayList<String> tables, ArrayList<String>joinConditions, ArrayList<String>colonnes, ArrayList<String>values) throws SQLException {
+            String tablesJoin;
+            if (listOfExistingTables.contains(tables.get(0))) tablesJoin = tables.get(0);
+            else throw new SQLException("Tables non existante : "+tables.get(0));
+            for (int i=0 ;i<joinConditions.size();i++){
+                if(listOfExistingTables.contains(tables.get(i+1)))
+                tablesJoin+=" inner join "+ tables.get(i+1)+" on "+joinConditions.get(i);
+                else throw new SQLException("Tables non existante : "+tables.get(i+1));
+            }
+            return selectExistingTable(tablesJoin, colonnes, values);
+        }
+
+
+
+}

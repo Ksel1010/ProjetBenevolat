@@ -1,6 +1,6 @@
 import java.sql.SQLException;
 
-public abstract class User {
+public  class User {
 	
 	protected String nom;
 	protected String prenom;
@@ -42,5 +42,5 @@ public abstract class User {
 		return this.nom + " " + this.prenom;
 	}
 	
-	public abstract void utilisation() throws SQLException;
+	public void utilisation() throws SQLException{};
 }
