@@ -57,10 +57,10 @@ public class Identification {
 		String mail = myObj.nextLine();
 		System.out.println("Donnez votre mot de passe");
 		String mdp = myObj.nextLine();
-		ArrayList<String> tables = new ArrayList<>(Arrays.asList("AccessControl", "User");
-		ArrayList<String> conditions = new ArrayList<>(Arrays.asList("AccessControl.mail = User.mail"));
-		ArrayList<String> colonnes = new ArrayList<>(Arrays.asList("AccessControl.mail","mdp" ));
-		ArrayList<String> values = new ArrayList<>(Arrays.asList(mail,mdp));
+		ArrayList<String> tables = new ArrayList<>(List.of("AccessControl", "User"));
+		ArrayList<String> conditions = new ArrayList<>(List.of("AccessControl.mail = User.mail"));
+		ArrayList<String> colonnes = new ArrayList<>(List.of("AccessControl.mail","mdp" ));
+		ArrayList<String> values = new ArrayList<>(List.of(mail,mdp));
 
 		ResultSet rs = SQLRequest.selectJoin(tables, conditions, colonnes, values);
 		
@@ -114,9 +114,9 @@ public class Identification {
 
 		String option = connectType();
 		if (option.equals("-a")) {
-			user = (Personne) user;
+			user = new Personne(user.getNom(), user.getPrenom(),user.getVille(),user.getMail(),user.getN_tel());
 		} else {
-			user = (Benevole) user;
+			user = new Benevole(user.getNom(), user.getPrenom(),user.getVille(),user.getMail(),user.getN_tel());
 		}
 
 		System.out.println("Bienvenue " + user.toString());
@@ -126,7 +126,7 @@ public class Identification {
 	}
 
 	public void signOut() throws SQLException {
-		connection.close();
+		SQLRequest.exit();
 		myObj.close();
 		System.out.println("Vous avez été déconnecté");
 		System.exit(0);

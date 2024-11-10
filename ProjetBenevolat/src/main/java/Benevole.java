@@ -1,6 +1,9 @@
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Benevole extends User {
@@ -11,11 +14,26 @@ public class Benevole extends User {
 
 	}
 
+	public Benevole(String mail){
+
+		try {
+			ResultSet rs = SQLRequest.select("User", new ArrayList<>(List.of("mail")), new ArrayList<>(List.of(mail)));
+			if (rs.next()){
+			this.nom = rs.getString("nom");
+			this.prenom = rs.getString("prenom");
+			this.ville = rs.getString("ville");
+			this.mail = mail;
+			this.n_tel = rs.getInt("tel");}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	private String useType() {
 		myObj = new Scanner(System.in);
 		String option = "";
-		while (!(option.equals("-t") || option.equals("-d") || option.equals("-m"))) {
-			System.out.println("Rentrez -t pour voir les tâches -m pour voir tes missions ou -d pour te déconnecter");
+		while (!(option.equals("-t") || option.equals("-d") || option.equals("-m")|| option.equals("-s"))) {
+			System.out.println("Rentrez -t pour voir les tâches -m pour voir tes missions ou -d pour te déconnecter ou -s");
 			option = myObj.nextLine();
 		}
 		return option;
@@ -28,32 +46,45 @@ public class Benevole extends User {
 		ResultSet rs;
 		switch (useType()) {
 			case "-m":
-				sql = "select * from Tasks, User " + "where mailBenevole = ? and  User.mail = Tasks.mailInitializer ";
-				preparedStatement = Main.iden.getConnection().prepareStatement(sql);
-				preparedStatement.setString(1, this.mail);
-				rs = preparedStatement.executeQuery();
-				System.out.print("Titre \t\t\t\t description\t\t ville\t dateExpiration\t Status\t Demandeur");
-				if (rs.next()) {
-					System.out.println(rs.getString("title")+"\t"+rs.getString("description")+"\t"+rs.getString("ville")
-							+"\t"+rs.getDate("dateExpiration")+"\t"+rs.getString("status")+"\t"+rs.getString("mailInitializer"));
-				}
+				ArrayList<String> tables = new ArrayList<>(List.of("Tasks", "User"));
+				ArrayList<String> conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));
+				ArrayList<String> colonnes = new ArrayList<>(List.of("mailBenevole" ));
+				ArrayList<String> values = new ArrayList<>(List.of(this.mail));
+				rs = SQLRequest.selectJoin(tables,conditions,colonnes,values);
+				this.setTasks(rs);
+				this.displayTasks();
 				break;
 			case "-t":
-				sql = "select * from Tasks, User " + "where mailInitializer = ? and  User.mail = Tasks.mailInitializer";
-				preparedStatement = Main.iden.getConnection().prepareStatement(sql);
-				preparedStatement.setString(1, this.mail);
-				rs = preparedStatement.executeQuery();
-				System.out.print("Titre \t\t\t\t description\t\t ville\t dateExpiration\t Status\t Bénévole");
-				if (rs.next()) {
-					System.out.println(rs.getString("title")+"\t"+rs.getString("description")+"\t"+rs.getString("ville")
-							+"\t"+rs.getDate("dateExpiration")+"\t"+rs.getString("status")+"\t"+rs.getString("mailBenevole"));
-				}
+
+				tables = new ArrayList<>(List.of("Tasks", "User"));
+				conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));
+				colonnes = new ArrayList<>(List.of("status"));
+				values = new ArrayList<>(List.of("valide"));
+				rs = SQLRequest.selectJoin(tables,conditions,colonnes,values);
+				this.setTasks(rs);
+				this.displayTasks();
 				break;
 
-		case "-d":
-			Main.iden.signOut();
-		break;
+			case "-s":
+
+				tables = new ArrayList<>(List.of("Tasks", "User"));
+				conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));
+				colonnes = new ArrayList<>(List.of("status"));
+				values = new ArrayList<>(List.of("valide"));
+				rs = SQLRequest.selectJoin(tables,conditions,colonnes,values);
+				this.setTasks(rs);
+				this.displayTasks();
+				System.out.println("Saississez le numéro de la tâche : ");
+				int i = Integer.valueOf(myObj.nextLine());
+				SQLRequest.update("Tasks", "status", "en_cours", "id = "+tasks.get(i-1).getId());
+				SQLRequest.update("Tasks", "mailBenevole", this.mail, "id = "+tasks.get(i-1).getId());
+				break;
+
+			case "-d":
+				Main.iden.signOut();
+				break;
 		}
+		this.utilisation();
 
 	}
 }

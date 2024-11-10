@@ -1,4 +1,6 @@
 import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class Task {
     private String status;
@@ -7,6 +9,8 @@ public class Task {
     private Benevole benevole;
     private String title;
     private Date dateExpiration;
+
+    private int id;
 
 
     public void setDateExpiration(Date dateExpiration) {
@@ -41,6 +45,10 @@ public class Task {
         return title;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public void setStatus(String status) {
         this.status = status;
     }
@@ -61,12 +69,37 @@ public class Task {
         this.title = titre;
     }
 
-    public Task(String description, Personne demandeur, String titre) {
+    public Task(Personne demandeur, String titre, String description, Date date) {
         this.description = description;
         this.demandeur = demandeur;
         this.title = titre;
-        status = null;
+        this.dateExpiration = date;
+        status = "valide";
+        benevole = null;
     }
+
+    public Task(ResultSet rs) {
+
+
+        try {
+            this.demandeur = new Personne(rs.getString("nom"),rs.getString("prenom"),
+                    rs.getString("ville"), rs.getString("mail"), rs.getInt("tel"));
+            this.title = rs.getString("title");
+            this.description = rs.getString("description");
+            this.dateExpiration = rs.getDate("dateExpiration");
+            this.status = rs.getString("status");
+            this.id = rs.getInt("id");
+            String mailBenevole = rs.getString("mailBenevole");
+            if (mailBenevole!=null) this.benevole = new Benevole(mailBenevole);
+            else this.benevole = null;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
 
     public String getMailInitializer() {
         return demandeur.getMail();
@@ -78,5 +111,11 @@ public class Task {
 
     public Date getDateExpiration() {
         return dateExpiration;
+    }
+
+
+    public void displayTask() {
+        System.out.printf("%-20s | %-30s | %-15s | %-15s | %-10s | %-20s | %-20s\n", this.title,this.description,this.dateExpiration.toString(),
+                this.demandeur.getVille(), this.status,this.demandeur.toString(), ( (this.benevole != null) ? this.benevole.toString() : "-"));
     }
 }

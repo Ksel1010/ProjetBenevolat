@@ -2,6 +2,9 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Personne extends User{
@@ -31,8 +34,6 @@ public class Personne extends User{
 	@Override
 	public void utilisation() throws SQLException {
 
-		String sql;
-		PreparedStatement preparedStatement;
 		switch (useType()) {
 		case "-a":
 			System.out.println("Rentrez le titre de votre tâche");
@@ -41,20 +42,19 @@ public class Personne extends User{
 			String description = myObj.nextLine();
 			System.out.println("Rentrez yyyy-[m]m-[d]d");
 			Date date = Date.valueOf(myObj.nextLine());
-			Task task ;
+			Task task = new Task(this, title, description,date) ;
 			SQLRequest.insert("Tasks", task);
 			break;
 
 		case "-t":
-			sql = "select * from Tasks, User " + "where mailInitializer = ? and  User.mail = Tasks.mailInitializer";
-			preparedStatement = Main.iden.getConnection().prepareStatement(sql);
-			preparedStatement.setString(1, this.mail);
-			ResultSet rs = preparedStatement.executeQuery();
-			System.out.print("Titre \t\t\t\t description\t\t ville\t dateExpiration\t Status\t Bénévole");
-			if (rs.next()) {
-				System.out.println(rs.getString("title")+"\t"+rs.getString("description")+"\t"+rs.getString("ville")
-						+"\t"+rs.getDate("dateExpiration")+"\t"+rs.getString("status")+"\t"+rs.getString("mailBenevole"));
-			}
+
+			ArrayList<String> tables = new ArrayList<>(Arrays.asList("Tasks", "User"));
+			ArrayList<String> conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));
+			ArrayList<String> colonnes = new ArrayList<>(List.of("mail" ));
+			ArrayList<String> values = new ArrayList<>(List.of(this.mail));
+			ResultSet rs = SQLRequest.selectJoin(tables,conditions,colonnes,values);
+			this.setTasks(rs);
+			this.displayTasks();
 			break;
 
 		case "-d":

@@ -38,12 +38,13 @@ public class SQLRequest {
                 break;
             case "Tasks":
                 Task task = (Task) o;
-                sql = "INSERT INTO Tasks(mailInitializer, description, title, dateExpiration) VALUES (?,?,?,?)";
+                sql = "INSERT INTO Tasks(mailInitializer, description, title, dateExpiration,status) VALUES (?,?,?,?,?)";
                 preparedStatement = SQLRequest.connection.prepareStatement(sql);
                 preparedStatement.setString(1, task.getMailInitializer());
                 preparedStatement.setString(2, task.getDescription());
                 preparedStatement.setString(3, task.getTitle());
                 preparedStatement.setDate(4, task.getDateExpiration());
+                preparedStatement.setString(5, task.getStatus());
                 preparedStatement.executeUpdate();
 
                 break;
@@ -70,11 +71,14 @@ public class SQLRequest {
             sql = "Select * from "+table+" where ";
             for (int i= 0; i<colonnes.size()-1;i++){
 
-                sql+=colonnes.get(i)+" = "+values.get(i)+" and ";
+                sql+=(colonnes.get(i)+"= ?"+" and ");
             }
-            sql+= colonnes.getLast()+" = "+values.getLast();
+            sql+= (colonnes.get(colonnes.size()-1)+" = ?");
             try {
                 preparedStatement = SQLRequest.connection.prepareStatement(sql);
+                for(int i= 0; i<values.size();i++){
+                    preparedStatement.setString(i+1, values.get(i));
+                }
                 return preparedStatement.executeQuery();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -93,6 +97,15 @@ public class SQLRequest {
             return selectExistingTable(tablesJoin, colonnes, values);
         }
 
-
-
+    public static void update(String table, String colonne, String valeur, String condition) throws SQLException{
+        if (listOfExistingTables.contains(table)){
+            sql = "UPDATE "+table+ " SET " + colonne + "= ? WHERE "+condition;
+            preparedStatement = SQLRequest.connection.prepareStatement(sql);
+            preparedStatement.setString(1, valeur);
+            preparedStatement.executeUpdate();
+        }
+    }
+    public static void exit() throws SQLException {
+        SQLRequest.connection.close();
+    }
 }
