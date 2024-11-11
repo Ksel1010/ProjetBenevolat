@@ -105,6 +105,15 @@ public class SQLRequest {
             preparedStatement.executeUpdate();
         }
     }
+
+    public static void delete(String table, String colonne, String valeur) throws SQLException {
+        if (listOfExistingTables.contains(table)){
+            sql = "DELETE from "+ table + " where " + colonne + " = ?";
+            preparedStatement = SQLRequest.connection.prepareStatement(sql);
+            preparedStatement.setString(1, valeur);
+            preparedStatement.executeUpdate();
+        }
+    }
     public static void exit() throws SQLException {
         SQLRequest.connection.close();
     }

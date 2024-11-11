@@ -8,6 +8,8 @@ import java.util.Scanner;
 
 public class Benevole extends User {
 	private Scanner myObj ;
+	private final ArrayList<String> availableOptions = new ArrayList<>(List.of("-t", "-m", "-s", "-d"));
+
 
 	public Benevole(String nom, String prenom, String ville, String mail, long n_tel) {
 		super(nom, prenom, ville, mail, n_tel);
@@ -32,8 +34,8 @@ public class Benevole extends User {
 	private String useType() {
 		myObj = new Scanner(System.in);
 		String option = "";
-		while (!(option.equals("-t") || option.equals("-d") || option.equals("-m")|| option.equals("-s"))) {
-			System.out.println("Rentrez -t pour voir les tâches -m pour voir tes missions ou -d pour te déconnecter ou -s");
+		while (!availableOptions.contains(option)) {
+			System.out.println("Rentrez -t pour voir les tâches -m pour voir tes missions ou -s pour selectionner une tâche ou -d pour te déconnecter");
 			option = myObj.nextLine();
 		}
 		return option;
