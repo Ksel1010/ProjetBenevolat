@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 public class Personne extends User{
 	static int nb = 0 ;
-	private final ArrayList<String> availableOptions = new ArrayList<>(List.of("-t", "-a", "-e", "-d"));
+	private final ArrayList<String> availableOptions = new ArrayList<>(List.of("-t", "-a", "-e", "-d","-i","-s"));
 	private Scanner myObj ;
 	public Personne(String nom, String prenom, String ville, String mail, long n_tel) {
 		super(nom, prenom, ville, mail, n_tel);
@@ -26,7 +26,7 @@ public class Personne extends User{
 		myObj = new Scanner(System.in);
 		String option = "";
 		while (!availableOptions.contains(option)) {
-			System.out.println("Rentrez -t pour voir les tâches ou -a pour rajouter une tâche ou -e pour effacer une tâche ou -d pour te déconnecter");
+			System.out.println("Rentrez -t pour voir les tâches ou -a pour rajouter une tâche ou -e pour effacer une tâche ou -i pour plus d'informations ou -s pour terminer une tâche ou -d pour te déconnecter");
 			option = myObj.nextLine();
 		}
 		return option;
@@ -76,11 +76,43 @@ public class Personne extends User{
 				System.out.println("Choisissez une tâche à partir de la liste fournie");
 			}
 			break;
-		/*deconnexion*/
+			
+		/*informations sur une tache*/
+		case "-i":
+			tables = new ArrayList<>(Arrays.asList("Tasks", "User"));
+			conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));
+			colonnes = new ArrayList<>(List.of("mail" ));
+			values = new ArrayList<>(List.of(this.mail));
+			rs = SQLRequest.selectJoin(tables,conditions,colonnes,values);
+			this.setTasks(rs);
+			System.out.println("Saississez le numéro de la tâche : ");
+			i = Integer.valueOf(myObj.nextLine());
+			this.displayMoreDetails(i-1);
+			break;
+		case "-s":
+			tables = new ArrayList<>(Arrays.asList("Tasks", "User"));
+			conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));
+			colonnes = new ArrayList<>(List.of("mail" ));
+			values = new ArrayList<>(List.of(this.mail));
+			rs = SQLRequest.selectJoin(tables,conditions,colonnes,values);
+			this.setTasks(rs);
+			System.out.println("Saississez le numéro de la tâche : ");
+			i = Integer.valueOf(myObj.nextLine());
+			SQLRequest.update("Tasks", "status", "termine", "id = "+tasks.get(i-1).getId());
+			System.out.println("Status modifié!");
+			break;
+			/*deconnexion*/
 		case "-d":
 			Main.iden.signOut();
 			break;
 		}
+
 		utilisation();
+	}
+
+	public void displayMoreDetails(int i){
+		Task t = tasks.get(i);
+		t.displayDescription();
+		t.displayPhoneBenevole();
 	}
 }

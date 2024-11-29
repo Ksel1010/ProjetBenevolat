@@ -115,7 +115,19 @@ public class Task {
 
 
     public void displayTask() {
-        System.out.printf("%-20s | %-30s | %-15s | %-15s | %-10s | %-20s | %-20s\n", this.title,this.description,this.dateExpiration.toString(),
+        System.out.printf("%-20s | %-15s | %-15s | %-10s | %-20s | %-20s\n", this.title,this.dateExpiration.toString(),
                 this.demandeur.getVille(), this.status,this.demandeur.toString(), ( (this.benevole != null) ? this.benevole.toString() : "-"));
+    }
+
+    public void displayDescription(){
+        System.out.println("Description : "+this.description);
+    }
+
+    public void displayPhoneAsker(){
+        System.out.println("Téléphone du démandeur :"+this.demandeur.getN_tel());
+    }
+
+    public void displayPhoneBenevole(){
+        System.out.println("Téléphone du bénevole :"+( (this.benevole != null) ? this.benevole.getN_tel() : "-"));
     }
 }

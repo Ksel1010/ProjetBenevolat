@@ -21,11 +21,11 @@ public class Identification {
 
 	
 	public void start() throws SQLException {
-		System.out.println("Voulez vous vous connecter -signIn ou créer un nouveau profil -signUp");
+		System.out.println("Voulez vous vous connecter -signIn ou créer un nouveau profil -signUp ");
 		myObj = new Scanner(System.in);
 		String page = myObj.nextLine();
 		while (!(page.equals("-signIn") || page.equals("-signUp"))) {
-			System.out.println("Pour se connecter taper \"-signIn\" et pour s'inscrire taper \"-signUp\"");
+			System.out.println("Pour se connecter taper \"-signIn\" et pour s'inscrire taper \"-signUp\" ");
 			page = myObj.nextLine();
 		}
 		if (page.equals("-signIn")) {
@@ -41,10 +41,10 @@ public class Identification {
 	
 	private String connectType() {
 		System.out.println(
-				"Voulez vous vous connecter en tant que bénévole -b ou en tant que personne en besoin d'aide -a");
+				"Voulez vous vous connecter en tant que bénévole -b ou en tant que personne en besoin d'aide -a pour les validateurs taper -v");
 		String option = myObj.nextLine();
-		while (!(option.equals("-a") || option.equals("-b"))) {
-			System.out.println("Rentrez -a pour personne en besoin d'aide ou -b pour personne bénévole");
+		while (!(option.equals("-a") || option.equals("-b") || option.equals("-v"))) {
+			System.out.println("Rentrez -a pour personne en besoin d'aide ou -b pour personne bénévole ou -v pour validateur");
 			option = myObj.nextLine();
 		}
 		return option;
@@ -57,38 +57,50 @@ public class Identification {
 		String mail = myObj.nextLine();
 		System.out.println("Donnez votre mot de passe");
 		String mdp = myObj.nextLine();
-		ArrayList<String> tables = new ArrayList<>(List.of("AccessControl", "User"));
-		ArrayList<String> conditions = new ArrayList<>(List.of("AccessControl.mail = User.mail"));
-		ArrayList<String> colonnes = new ArrayList<>(List.of("AccessControl.mail","mdp" ));
-		ArrayList<String> values = new ArrayList<>(List.of(mail,mdp));
-
-		ResultSet rs = SQLRequest.selectJoin(tables, conditions, colonnes, values);
-		
-		if (rs.next()) {
-			if (option.equals("-a")) {
-				user = new Personne(rs.getString("nom"), rs.getString("prenom"), rs.getString("ville"),
-						rs.getString("mail"), rs.getInt("tel"));
-
-			} else {
-				user = new Benevole(rs.getString("nom"), rs.getString("prenom"), rs.getString("ville"),
-						rs.getString("mail"), rs.getInt("tel"));
-
+		if(option.equals("-v")){
+			ResultSet rs= SQLRequest.select("Validators", new ArrayList<>(List.of("mail", "mdp")), new ArrayList<>(List.of(mail, mdp)));
+			if(rs.next()){
+				Validator v = new Validator(mail);
+				v.utilisation();
 			}
-			System.out.println("Bienvenue " + user.toString());
-			user.utilisation();
-			
-		} else {
-			System.out.println("Erreur d'authentification");
-			rs = SQLRequest.select("User", new ArrayList<>(List.of("mail")), new ArrayList<>(List.of(mail)));
-			if (rs.next()) {
-				System.out.println("Mot de passe erronné");
-				this.signUp();
-			} else {
-				System.out.println("Adresse mail inconnue");
-				this.start();
+			else {
+				System.out.println("Erreur d'authentification");
+				this.signIn();
 			}
 		}
+		else {
+			ArrayList<String> tables = new ArrayList<>(List.of("AccessControl", "User"));
+			ArrayList<String> conditions = new ArrayList<>(List.of("AccessControl.mail = User.mail"));
+			ArrayList<String> colonnes = new ArrayList<>(List.of("AccessControl.mail", "mdp"));
+			ArrayList<String> values = new ArrayList<>(List.of(mail, mdp));
 
+			ResultSet rs = SQLRequest.selectJoin(tables, conditions, colonnes, values);
+
+			if (rs.next()) {
+				if (option.equals("-a")) {
+					user = new Personne(rs.getString("nom"), rs.getString("prenom"), rs.getString("ville"),
+							rs.getString("mail"), rs.getInt("tel"));
+
+				} else {
+					user = new Benevole(rs.getString("nom"), rs.getString("prenom"), rs.getString("ville"),
+							rs.getString("mail"), rs.getInt("tel"));
+
+				}
+				System.out.println("Bienvenue " + user.toString());
+				user.utilisation();
+
+			} else {
+				System.out.println("Erreur d'authentification");
+				rs = SQLRequest.select("User", new ArrayList<>(List.of("mail")), new ArrayList<>(List.of(mail)));
+				if (rs.next()) {
+					System.out.println("Mot de passe erronné");
+					this.signUp();
+				} else {
+					System.out.println("Adresse mail inconnue");
+					this.start();
+				}
+			}
+		}
 	}
 	
 	public void signUp() throws SQLException {

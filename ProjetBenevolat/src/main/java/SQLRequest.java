@@ -8,7 +8,7 @@ public class SQLRequest {
     private static Connection connection;
     private static String sql;
     private static PreparedStatement preparedStatement;
-    private static final ArrayList<String>listOfExistingTables = new ArrayList<>(Arrays.asList("Tasks","AccessControl","User"));
+    private static final ArrayList<String>listOfExistingTables = new ArrayList<>(Arrays.asList("Tasks","AccessControl","User", "Validators"));
 
     static {
 
@@ -67,6 +67,14 @@ public class SQLRequest {
 
         }
 
+        public static ResultSet selectIsNull(String table, String colonne) throws SQLException {
+            if (listOfExistingTables.contains(table)){
+                sql = "select * from "+table+" where "+colonne+" is null";
+                preparedStatement = SQLRequest.connection.prepareStatement(sql);
+                return preparedStatement.executeQuery();
+            }else throw new SQLException("Table non existante");
+        }
+
         private static ResultSet selectExistingTable(String table, ArrayList<String> colonnes, ArrayList<String> values){
             sql = "Select * from "+table+" where ";
             for (int i= 0; i<colonnes.size()-1;i++){
@@ -99,9 +107,14 @@ public class SQLRequest {
 
     public static void update(String table, String colonne, String valeur, String condition) throws SQLException{
         if (listOfExistingTables.contains(table)){
-            sql = "UPDATE "+table+ " SET " + colonne + "= ? WHERE "+condition;
-            preparedStatement = SQLRequest.connection.prepareStatement(sql);
-            preparedStatement.setString(1, valeur);
+            if (valeur==null){
+                sql = "UPDATE "+table+ " SET " + colonne + "= NULL WHERE "+condition;
+                preparedStatement = SQLRequest.connection.prepareStatement(sql);
+            }else {
+                sql = "UPDATE " + table + " SET " + colonne + "= ? WHERE " + condition;
+                preparedStatement = SQLRequest.connection.prepareStatement(sql);
+                preparedStatement.setString(1, valeur);
+            }
             preparedStatement.executeUpdate();
         }
     }

@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class Benevole extends User {
 	private Scanner myObj ;
-	private final ArrayList<String> availableOptions = new ArrayList<>(List.of("-t", "-m", "-s", "-d"));
+	private final ArrayList<String> availableOptions = new ArrayList<>(List.of("-t", "-m", "-s", "-d","-i"));
 
 
 	public Benevole(String nom, String prenom, String ville, String mail, long n_tel) {
@@ -35,7 +35,7 @@ public class Benevole extends User {
 		myObj = new Scanner(System.in);
 		String option = "";
 		while (!availableOptions.contains(option)) {
-			System.out.println("Rentrez -t pour voir les tâches -m pour voir tes missions ou -s pour selectionner une tâche ou -d pour te déconnecter");
+			System.out.println("Rentrez -t pour voir les tâches -m pour voir tes missions ou -s pour selectionner une tâche ou -i pour plus d'informations ou -d pour te déconnecter");
 			option = myObj.nextLine();
 		}
 		return option;
@@ -82,11 +82,31 @@ public class Benevole extends User {
 				SQLRequest.update("Tasks", "mailBenevole", this.mail, "id = "+tasks.get(i-1).getId());
 				break;
 
+			case "-i":
+				tables = new ArrayList<>(List.of("Tasks", "User"));
+				conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));
+				colonnes = new ArrayList<>(List.of("status"));
+				values = new ArrayList<>(List.of("valide"));
+				rs = SQLRequest.selectJoin(tables,conditions,colonnes,values);
+				this.setTasks(rs);
+				this.displayTasks();
+				System.out.println("Saississez le numéro de la tâche : ");
+				i = Integer.valueOf(myObj.nextLine());
+				this.displayMoreDetails(i-1);
+				break;
+
 			case "-d":
 				Main.iden.signOut();
 				break;
+
 		}
 		this.utilisation();
 
+	}
+
+	public void displayMoreDetails(int i){
+		Task t = tasks.get(i);
+		t.displayDescription();
+		t.displayPhoneAsker();
 	}
 }
