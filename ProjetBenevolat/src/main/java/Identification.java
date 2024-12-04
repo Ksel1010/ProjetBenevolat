@@ -79,7 +79,7 @@ public class Identification {
 			if (rs.next()) {
 				if (option.equals("-a")) {
 					user = new Personne(rs.getString("nom"), rs.getString("prenom"), rs.getString("ville"),
-							rs.getString("mail"), rs.getInt("tel"));
+							rs.getString("mail"), rs.getInt("tel"), rs.getString("validator"));
 
 				} else {
 					user = new Benevole(rs.getString("nom"), rs.getString("prenom"), rs.getString("ville"),

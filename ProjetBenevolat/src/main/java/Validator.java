@@ -29,10 +29,12 @@ public class Validator {
                     mails.add(rs.getString("mail"));
                 }
                 int i = n+1;
-                while (i>n){
-                    System.out.println("Saisissez le numero de l'utilisateur à rajouter: ");
+                while (i>n || i<0){
+                    System.out.println("Saisissez le numero de l'utilisateur à rajouter: (0 pour annuler)");
                     i = myObj.nextInt();
+                    myObj.nextLine(); // pour vider le buffer du caractere de saut de ligne
                 }
+                if(i==0)break;
                 SQLRequest.update("User", "validator", this.mail, "mail = \'"+mails.get(i-1)+"\'");
                 break;
 
@@ -59,10 +61,12 @@ public class Validator {
                     mails.add(rs.getString("mail"));
                 }
                 i = n+1;
-                while (i>n){
-                    System.out.println("Saisissez le numero de l'utilisateur à supprimer de la liste: ");
+                while (i>n || i<0){
+                    System.out.println("Saisissez le numero de l'utilisateur à supprimer de la liste: (0 pour annuler)");
                     i = myObj.nextInt();
+                    myObj.nextLine(); // pour vider le buffer du caractere de saut de ligne
                 }
+                if (i==0) break;
                 SQLRequest.update("User", "validator", null, "mail = \'"+mails.get(i-1)+"\'");
 
                 break;
@@ -78,19 +82,25 @@ public class Validator {
                 if (this.taches.isEmpty()) break;
                 this.displayTasks();
                 do {
-                    System.out.println("Choisir le numero de la tache à rendre valide");
+                    System.out.println("Choisir le numero de la tache à rendre valide ou 0 pour annuler");
                     i = myObj.nextInt();
-                }while (i>taches.size() );
+                    myObj.nextLine(); // pour vider le buffer du caractere de saut de ligne
+                }while (i>taches.size() && i>=0);
+                if (i==0) break;
                 SQLRequest.update("Tasks", "status", "valide", "id = "+taches.get(i-1).getId());
                 break;
             case "-r":
                 /*choisir une tache a valider*/
                 rs = SQLRequest.select("Tasks", new ArrayList<String>(List.of("status")), new ArrayList<String>(List.of("a_valider"))) ;
+                this.setTasks(rs);
+                if (this.taches.isEmpty()) break;
                 this.displayTasks();
                 do {
-                    System.out.println("Choisir le numero de la tache à refuser");
+                    System.out.println("Choisir le numero de la tache à refuser ou 0 pour annuler ");
                     i = myObj.nextInt();
-                }while (i>taches.size());
+                    myObj.nextLine(); // pour vider le buffer du caractere de saut de ligne
+                }while (i>taches.size() && i>=0);
+                if (i==0) break;
                 SQLRequest.update("Tasks", "status", "refusee", "id = "+taches.get(i-1).getId());
                 break;
             case "-d":
@@ -101,9 +111,10 @@ public class Validator {
         this.utilisation();
     }
 
-    private String useType() {String option = "";
+    private String useType() {
+        String option = "";
         while (!options.contains(option)) {
-            System.out.println("Pour rajouter un utilisateur à la liste taper -a, pour voir les tâches à valider taper -t pour valider une tache taper -v\npour refuser une tache -r pour enlever un utilisateur taper -s pour se déconnecter taper -d");
+            System.out.println("Pour rajouter un utilisateur à la liste taper -a, pour voir les tâches à valider taper -t pour valider une tache taper -v\npour refuser une tache -r pour enlever un utilisateur taper -s pour se déconnecter taper -d\n");
             option = myObj.nextLine();
         }
         return option;

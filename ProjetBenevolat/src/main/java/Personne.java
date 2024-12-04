@@ -9,11 +9,17 @@ import java.util.Scanner;
 
 public class Personne extends User{
 	static int nb = 0 ;
+	private String validator;
 	private final ArrayList<String> availableOptions = new ArrayList<>(List.of("-t", "-a", "-e", "-d","-i","-s"));
 	private Scanner myObj ;
 	public Personne(String nom, String prenom, String ville, String mail, long n_tel) {
 		super(nom, prenom, ville, mail, n_tel);
 		Personne.nb ++;
+	}
+
+	public Personne(String nom, String prenom, String ville, String mail, long n_tel, String validator) {
+		this(nom, prenom, ville, mail, n_tel);
+		validator = validator;
 	}
 	public static void setNb(int nb) {
 		Personne.nb = nb;
@@ -44,7 +50,9 @@ public class Personne extends User{
 			String description = myObj.nextLine();
 			System.out.println("Rentrez yyyy-[m]m-[d]d");
 			Date date = Date.valueOf(myObj.nextLine());
-			Task task = new Task(this, title, description,date) ;
+			Task task;
+			if (validator==null) task = new Task(this, title, description,date) ;
+			else task= new Task(this, title, description,date,"a_valider") ;
 			SQLRequest.insert("Tasks", task);
 			break;
 
@@ -89,6 +97,7 @@ public class Personne extends User{
 			i = Integer.valueOf(myObj.nextLine());
 			this.displayMoreDetails(i-1);
 			break;
+			/*terminer une tache*/
 		case "-s":
 			tables = new ArrayList<>(Arrays.asList("Tasks", "User"));
 			conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));

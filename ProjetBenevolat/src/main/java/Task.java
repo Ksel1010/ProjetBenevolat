@@ -77,6 +77,14 @@ public class Task {
         status = "valide";
         benevole = null;
     }
+    public Task(Personne demandeur, String titre, String description, Date date, String status) {
+        this.description = description;
+        this.demandeur = demandeur;
+        this.title = titre;
+        this.dateExpiration = date;
+        this.status = status;
+        benevole = null;
+    }
 
     public Task(ResultSet rs) {
 

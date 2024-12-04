@@ -1,7 +1,6 @@
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class SQLRequest {
 
@@ -75,22 +74,29 @@ public class SQLRequest {
             }else throw new SQLException("Table non existante");
         }
 
-        private static ResultSet selectExistingTable(String table, ArrayList<String> colonnes, ArrayList<String> values){
-            sql = "Select * from "+table+" where ";
-            for (int i= 0; i<colonnes.size()-1;i++){
+        private static ResultSet selectExistingTable(String table, ArrayList<String> colonnes, ArrayList<String> values) throws SQLException {
+            if (colonnes.size() != values.size())
+                throw new SQLException("columns and values arrays sizes are different");
+            sql = "Select * from " + table;
+            if (colonnes.size() != 0) {
+                sql += " where ";
+                for (int i = 0; i < colonnes.size() - 1; i++) {
 
-                sql+=(colonnes.get(i)+"= ?"+" and ");
-            }
-            sql+= (colonnes.get(colonnes.size()-1)+" = ?");
-            try {
-                preparedStatement = SQLRequest.connection.prepareStatement(sql);
-                for(int i= 0; i<values.size();i++){
-                    preparedStatement.setString(i+1, values.get(i));
+                    sql += (colonnes.get(i) + "= ?" + " and ");
                 }
-                return preparedStatement.executeQuery();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+                sql += (colonnes.get(colonnes.size() - 1) + " = ?");
+                try {
+                    preparedStatement = SQLRequest.connection.prepareStatement(sql);
+                    for (int i = 0; i < values.size(); i++) {
+                        preparedStatement.setString(i + 1, values.get(i));
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                preparedStatement = SQLRequest.connection.prepareStatement(sql);
             }
+            return preparedStatement.executeQuery();
         }
 
         public static ResultSet selectJoin(ArrayList<String> tables, ArrayList<String>joinConditions, ArrayList<String>colonnes, ArrayList<String>values) throws SQLException {
