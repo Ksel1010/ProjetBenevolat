@@ -3,7 +3,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public  class User {
-	
+	public static final String FIN_TABLEAU="_______________________________________________________________________________________________________________________________";
 	protected String nom;
 	protected String prenom;
 	protected String ville; 
@@ -61,11 +61,13 @@ public  class User {
 
 
 	public void displayTasks(){
-		System.out.printf("%-10s | %-20s | %-15s | %-15s | %-10s | %-20s | %-20s\n", "Numero","Titre","DateExpiration","Ville","Status","Demandeur", "Bénévole");
+		System.out.printf("%-10s | %-25s | %-15s | %-15s | %-10s | %-20s | %-20s\n", "Numero","Titre","DateExpiration","Ville","Status","Demandeur", "Bénévole");
+		System.out.println(User.FIN_TABLEAU);
 		for (int i=0;i<this.tasks.size();i++){
 			System.out.printf("%-10s | ",String.valueOf(i+1));
 			tasks.get(i).displayTask();
 		}
+		System.out.println(User.FIN_TABLEAU);
 	}
 
 

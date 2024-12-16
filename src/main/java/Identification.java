@@ -94,7 +94,7 @@ public class Identification {
 				rs = SQLRequest.select("User", new ArrayList<>(List.of("mail")), new ArrayList<>(List.of(mail)));
 				if (rs.next()) {
 					System.out.println("Mot de passe erronné");
-					this.signUp();
+					this.signIn();
 				} else {
 					System.out.println("Adresse mail inconnue");
 					this.start();

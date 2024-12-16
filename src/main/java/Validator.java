@@ -22,12 +22,14 @@ public class Validator {
                 ResultSet rs = SQLRequest.selectIsNull("User", "validator");
                 int n = 1;
                 System.out.printf("%-10s | %-15s | %-15s | %-50s\n", "numero", "nom","prenom", "e-mail");
+                System.out.println(User.FIN_TABLEAU);
                 ArrayList<String> mails = new ArrayList<>();
                 while(rs.next()){
                     System.out.printf("%-10d | %-15s | %-15s | %-50s\n",n, rs.getString("nom"), rs.getString("prenom"), rs.getString("mail"));
                     n++;
                     mails.add(rs.getString("mail"));
                 }
+                System.out.println(User.FIN_TABLEAU);
                 int i = n+1;
                 while (i>n || i<0){
                     System.out.println("Saisissez le numero de l'utilisateur à rajouter: (0 pour annuler)");
@@ -54,12 +56,14 @@ public class Validator {
                 rs = SQLRequest.select("User", new ArrayList<>(List.of("validator")), new ArrayList<>(List.of(this.mail)));
                 n = 1;
                 System.out.printf("%-10s | %-15s | %-15s | %-50s\n", "numero", "nom","prenom", "e-mail");
+                System.out.println(User.FIN_TABLEAU);
                 mails = new ArrayList<>();
                 while(rs.next()){
                     System.out.printf("%-10d | %-15s | %-15s | %-50s\n",n, rs.getString("nom"), rs.getString("prenom"), rs.getString("mail"));
                     n++;
                     mails.add(rs.getString("mail"));
                 }
+                System.out.println(User.FIN_TABLEAU);
                 i = n+1;
                 while (i>n || i<0){
                     System.out.println("Saisissez le numero de l'utilisateur à supprimer de la liste: (0 pour annuler)");
@@ -79,29 +83,38 @@ public class Validator {
                 values = new ArrayList<>(List.of("a_valider"));
                 rs = SQLRequest.selectJoin(tables,conditions,colonnes,values);
                 this.setTasks(rs);
-                if (this.taches.isEmpty()) break;
+                if (this.taches.isEmpty()) {
+                    System.out.println("Acune tâce à valider. ");
+                    break;
+                }
                 this.displayTasks();
                 do {
                     System.out.println("Choisir le numero de la tache à rendre valide ou 0 pour annuler");
                     i = myObj.nextInt();
                     myObj.nextLine(); // pour vider le buffer du caractere de saut de ligne
-                }while (i>taches.size() && i>=0);
+                }while (i>taches.size() || i<0);
                 if (i==0) break;
                 SQLRequest.update("Tasks", "status", "valide", "id = "+taches.get(i-1).getId());
                 break;
             case "-r":
                 /*choisir une tache a valider*/
-                rs = SQLRequest.select("Tasks", new ArrayList<String>(List.of("status")), new ArrayList<String>(List.of("a_valider"))) ;
+                rs = SQLRequest.selectJoin(new ArrayList<>(List.of("Tasks", "User")),new ArrayList<>(List.of("Tasks.mailInitializer = User.mail")), new ArrayList<String>(List.of("status")), new ArrayList<String>(List.of("a_valider"))) ;
                 this.setTasks(rs);
-                if (this.taches.isEmpty()) break;
+                if (this.taches.isEmpty()) {
+                    System.out.println("Aucune tâche à refuser.");
+                    break;
+                }
                 this.displayTasks();
                 do {
                     System.out.println("Choisir le numero de la tache à refuser ou 0 pour annuler ");
                     i = myObj.nextInt();
                     myObj.nextLine(); // pour vider le buffer du caractere de saut de ligne
-                }while (i>taches.size() && i>=0);
+                }while (i>taches.size() || i<0);
                 if (i==0) break;
+                System.out.println("Donner le motif du refus de la tache: ");
+                RefusalReason refusal = new RefusalReason(taches.get(i-1), myObj.nextLine());
                 SQLRequest.update("Tasks", "status", "refusee", "id = "+taches.get(i-1).getId());
+                SQLRequest.insert("RefusalReason", refusal);
                 break;
             case "-d":
                 /*deconnexion*/
@@ -122,10 +135,12 @@ public class Validator {
 
     void displayTasks() throws SQLException {
         System.out.printf("%-10s | %-20s | %-15s | %-15s | %-10s | %-20s | %-20s\n", "Numero","Titre","DateExpiration","Ville","Status","Demandeur", "Bénévole");
+        System.out.println(User.FIN_TABLEAU);
         for (int i = 0 ; i<this.taches.size();i++){
             System.out.printf("%-10d | ",i+1);
             taches.get(i).displayTask();
         }
+        System.out.println(User.FIN_TABLEAU);
     }
     public void setTasks(ResultSet rs) throws SQLException {
         this.taches = new ArrayList<>();

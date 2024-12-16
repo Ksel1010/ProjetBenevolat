@@ -123,7 +123,7 @@ public class Task {
 
 
     public void displayTask() {
-        System.out.printf("%-20s | %-15s | %-15s | %-10s | %-20s | %-20s\n", this.title,this.dateExpiration.toString(),
+        System.out.printf("%-25s | %-15s | %-15s | %-10s | %-20s | %-20s\n", this.title,this.dateExpiration.toString(),
                 this.demandeur.getVille(), this.status,this.demandeur.toString(), ( (this.benevole != null) ? this.benevole.toString() : "-"));
     }
 

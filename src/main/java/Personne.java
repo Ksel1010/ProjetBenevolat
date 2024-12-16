@@ -1,5 +1,4 @@
 import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ public class Personne extends User{
 
 	public Personne(String nom, String prenom, String ville, String mail, long n_tel, String validator) {
 		this(nom, prenom, ville, mail, n_tel);
-		validator = validator;
+		this.validator = validator;
 	}
 	public static void setNb(int nb) {
 		Personne.nb = nb;
@@ -75,13 +74,14 @@ public class Personne extends User{
 			rs = SQLRequest.selectJoin(tables,conditions,colonnes,values);
 			this.setTasks(rs);
 			this.displayTasks();
-			System.out.println("Saississez le numéro de la tâche à effacer : ");
-			int i = Integer.valueOf(myObj.nextLine());
-			if(i<=this.tasks.size() && i>0){
-				SQLRequest.delete("Tasks", "Tasks.id", String.valueOf(this.tasks.get(i-1).getId()));
-			}
-			else {
-				System.out.println("Choisissez une tâche à partir de la liste fournie");
+			int i;
+			do {
+				System.out.println("Saississez le numéro de la tâche à effacer : (O pour annuler)");
+				i = Integer.valueOf(myObj.nextLine());
+			}while (i>=this.tasks.size() || i<0);
+			if (i==0) break ;
+			else{
+				SQLRequest.delete("Tasks", "Tasks.id", String.valueOf(this.tasks.get(i - 1).getId()));
 			}
 			break;
 			
@@ -93,9 +93,21 @@ public class Personne extends User{
 			values = new ArrayList<>(List.of(this.mail));
 			rs = SQLRequest.selectJoin(tables,conditions,colonnes,values);
 			this.setTasks(rs);
-			System.out.println("Saississez le numéro de la tâche : ");
-			i = Integer.valueOf(myObj.nextLine());
-			this.displayMoreDetails(i-1);
+			do {
+				System.out.println("Saississez le numéro de la tâche : (0 pour annuler)");
+				i = Integer.valueOf(myObj.nextLine());
+			}while(i>this.tasks.size() || i<0);
+			if (i==0) break ;
+			else {
+				if (this.tasks.get(i-1).getStatus().equals("refusee")){
+					rs = SQLRequest.select("RefusalReason", new ArrayList<>(List.of("idTask")), new ArrayList<>(List.of(String.valueOf(this.tasks.get(i-1).getId()))));
+					if(rs.next()){
+						System.out.println("Tache refusée pour le motif suivant:");
+						System.out.println(rs.getString("reason"));
+					}
+				}
+				this.displayMoreDetails(i - 1);
+			}
 			break;
 			/*terminer une tache*/
 		case "-s":
@@ -105,8 +117,10 @@ public class Personne extends User{
 			values = new ArrayList<>(List.of(this.mail));
 			rs = SQLRequest.selectJoin(tables,conditions,colonnes,values);
 			this.setTasks(rs);
-			System.out.println("Saississez le numéro de la tâche : ");
-			i = Integer.valueOf(myObj.nextLine());
+			do {
+				System.out.println("Saississez le numéro de la tâche : (0 pour annuler)");
+				i = Integer.valueOf(myObj.nextLine());
+			}while(i>this.tasks.size()||i<0);
 			SQLRequest.update("Tasks", "status", "termine", "id = "+tasks.get(i-1).getId());
 			System.out.println("Status modifié!");
 			break;

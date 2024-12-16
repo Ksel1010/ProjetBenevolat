@@ -7,7 +7,7 @@ public class SQLRequest {
     private static Connection connection;
     private static String sql;
     private static PreparedStatement preparedStatement;
-    private static final ArrayList<String>listOfExistingTables = new ArrayList<>(Arrays.asList("Tasks","AccessControl","User", "Validators"));
+    private static final ArrayList<String>listOfExistingTables = new ArrayList<>(Arrays.asList("Tasks","AccessControl","User", "Validators", "RefusalReason"));
 
     static {
 
@@ -53,6 +53,14 @@ public class SQLRequest {
                 preparedStatement = SQLRequest.connection.prepareStatement(sql);
                 preparedStatement.setString(1, li[0]);
                 preparedStatement.setString(2, li[1]);
+                preparedStatement.executeUpdate();
+                break;
+            case "RefusalReason" :
+                RefusalReason r = (RefusalReason) o ;
+                sql = "INSERT INTO RefusalReason(idTask, reason) VALUES (?,?)";
+                preparedStatement = SQLRequest.connection.prepareStatement(sql);
+                preparedStatement.setInt(1, r.task().getId());
+                preparedStatement.setString(2, r.reason());
                 preparedStatement.executeUpdate();
                 break;
         }
