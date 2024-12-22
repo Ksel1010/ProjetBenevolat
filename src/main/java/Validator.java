@@ -97,7 +97,7 @@ public class Validator {
                 SQLRequest.update("Tasks", "status", "valide", "id = "+taches.get(i-1).getId());
                 break;
             case "-r":
-                /*choisir une tache a valider*/
+                /*choisir une tache a refuser*/
                 rs = SQLRequest.selectJoin(new ArrayList<>(List.of("Tasks", "User")),new ArrayList<>(List.of("Tasks.mailInitializer = User.mail")), new ArrayList<String>(List.of("status")), new ArrayList<String>(List.of("a_valider"))) ;
                 this.setTasks(rs);
                 if (this.taches.isEmpty()) {

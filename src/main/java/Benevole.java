@@ -48,6 +48,7 @@ public class Benevole extends User {
 		ResultSet rs;
 		switch (useType()) {
 			case "-m":
+			/*voir mes missions */
 				ArrayList<String> tables = new ArrayList<>(List.of("Tasks", "User"));
 				ArrayList<String> conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));
 				ArrayList<String> colonnes = new ArrayList<>(List.of("mailBenevole" ));
@@ -57,7 +58,7 @@ public class Benevole extends User {
 				this.displayTasks();
 				break;
 			case "-t":
-
+			/*voir les taches disponibles */
 				tables = new ArrayList<>(List.of("Tasks", "User"));
 				conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));
 				colonnes = new ArrayList<>(List.of("status"));
@@ -68,7 +69,7 @@ public class Benevole extends User {
 				break;
 
 			case "-s":
-
+			/*selectionner une tache */
 				tables = new ArrayList<>(List.of("Tasks", "User"));
 				conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));
 				colonnes = new ArrayList<>(List.of("status"));
@@ -83,6 +84,7 @@ public class Benevole extends User {
 				break;
 
 			case "-i":
+			/*plus d'informations */
 				tables = new ArrayList<>(List.of("Tasks", "User"));
 				conditions = new ArrayList<>(List.of("Tasks.mailInitializer = User.mail"));
 				colonnes = new ArrayList<>(List.of("status"));
@@ -96,6 +98,7 @@ public class Benevole extends User {
 				break;
 
 			case "-d":
+			/*deconexion */
 				Main.iden.signOut();
 				break;
 
